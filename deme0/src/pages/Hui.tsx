@@ -12,6 +12,7 @@ import {
   Alert,
   Platform,
   Linking,
+  FlatList,
 } from 'react-native';
 import {
   launchImageLibrary,
@@ -22,6 +23,7 @@ import axios, { AxiosError } from 'axios';
 const tabs = ['文生图', '图生图', '美图广场'];
 export default function Hui() {
   const [zhi,setzhi]=useState<string>('');
+  const [isImageGenerating, setIsImageGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
   const [selectedImage, setSelectedImage] = useState<Asset | null>(null);
   const [text, setText] = useState<string>('');
@@ -31,9 +33,8 @@ export default function Hui() {
       quality: 1 as const,
       maxWidth: 1024,
       maxHeight: 1024,
-      includeBase64: true, // 修改为true以获取base64数据
+      includeBase64: true,
     };
-
     launchImageLibrary(options, (response: ImagePickerResponse) => {
       console.log('Image picker response:', response);
 
@@ -54,12 +55,11 @@ export default function Hui() {
       }
     });
   };
-
   const removeImage = (): void => {
     setSelectedImage(null);
   };
   // 定义生成图片的函数
-  const [pan, setpan] = useState<string>('');
+  const [pan, setpan] = useState<string>(''); // 设置默认风格
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [textGeneratedImageUrl, setTextGeneratedImageUrl] = useState<
     string | null
@@ -77,13 +77,16 @@ export default function Hui() {
   const generateImage = async (): Promise<void> => {
     const token = 'sk-ykohumliuxiqsioulldxwjdiguapkznqtazfhytdsvvmeaaq';
     try {
+      // 生成新图片前先清除旧图片并显示加载状态
+      setTextGeneratedImageUrl(null);
       setIsLoading(true);
       console.log('函数被调用，开始请求API...');
       const response = await axios.post(
         'https://api.siliconflow.cn/v1/images/generations',
         {
           model: 'Kwai-Kolors/Kolors',
-          prompt: text,
+          prompt: `${text}，风格：${pan}`,
+          style: pan,
           image_size: '1024x1024',
           batch_size: 1,
           num_inference_steps: 20,
@@ -170,6 +173,7 @@ const saveData = async (i: string, t: string) => {
   }
 };
   const generateImageFromImage = async (): Promise<void> => {
+    setIsImageGenerating(true);
     const token = 'sk-ykohumliuxiqsioulldxwjdiguapkznqtazfhytdsvvmeaaq';
     if (!selectedImage) {
       Alert.alert('提示', '请先上传参考图片');
@@ -207,8 +211,10 @@ const saveData = async (i: string, t: string) => {
         'https://api.siliconflow.cn/v1/images/generations',
         {
           model: 'Kwai-Kolors/Kolors',
-          prompt: text,pan,zhi,
+          prompt: `${text} ${zhi}`,
+          style: zhi,
           image: base64Image,
+          strength: 0.95 , // 控制原图影响程度，0-1之间，值越大越接近原图
           image_size: '1024x1024',
           batch_size: 1,
           num_inference_steps: 20,
@@ -236,10 +242,11 @@ const saveData = async (i: string, t: string) => {
       if (result.images && result.images.length > 0) {
         const imageUrl = result.images[0].url;
         setImageGeneratedImageUrl(imageUrl);
-        console.log('图生图成功，图片URL：', imageUrl);
-        // 确保在状态更新后再保存数据
-        // 直接使用API返回的imageUrl，不依赖状态更新
-        saveData(zhi, imageUrl);
+      console.log('图生图成功，图片URL：', imageUrl);
+      // 确保在状态更新后再保存数据
+      // 直接使用API返回的imageUrl，不依赖状态更新
+      saveData(zhi, imageUrl);
+      setIsImageGenerating(false);
       } else {
         const errorMsg = `错误信息：${
           result.error?.message || result.error || '未知错误'
@@ -375,6 +382,9 @@ const saveData = async (i: string, t: string) => {
                     flexWrap: 'wrap',
                     marginLeft: 15,
                     marginTop: 5,
+                    height: 50,
+                    width: '90%',
+              
                   }}
                 >
                   {type.map((i, index) => {
@@ -422,10 +432,20 @@ const saveData = async (i: string, t: string) => {
                 paddingHorizontal: 15,
               }}
             >
-              <Text style={styles.button} onPress={generateImage}>
-                开始绘制
-              </Text>
-              <Text
+              {text === '' ? (
+                <TouchableOpacity style={styles.button} onPress={generateImage}>
+                  <Text style={styles.buttonText}>
+                    随机绘制
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity style={styles.button} onPress={generateImage}>
+                  <Text style={styles.buttonText}>
+                    开始绘制
+                  </Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
                 onPress={async () => {
                   if (textGeneratedImageUrl) {
                     await Linking.openURL(textGeneratedImageUrl);
@@ -435,8 +455,10 @@ const saveData = async (i: string, t: string) => {
                 }}
                 style={styles.button1}
               >
-                下载
-              </Text>
+                <Text style={styles.button1Text}>
+                  下载
+                </Text>
+              </TouchableOpacity>
             </View>
           </ScrollView>
         )}
@@ -509,11 +531,13 @@ const saveData = async (i: string, t: string) => {
               }}
             >
               {!imageGeneratedImageUrl && (
-                <Text style={styles.button10} onPress={generateImageFromImage}>
-                  开始绘制
-                </Text>
+                <TouchableOpacity style={styles.button10} onPress={generateImageFromImage} disabled={isImageGenerating}>
+                  <Text style={styles.button10Text}>
+                    {isImageGenerating ? '生成中...' : '开始绘制'}
+                  </Text>
+                </TouchableOpacity>
               )}
-              <Text
+              <TouchableOpacity
                 onPress={async () => {
                   if (imageGeneratedImageUrl) {
                     await Linking.openURL(imageGeneratedImageUrl);
@@ -523,45 +547,46 @@ const saveData = async (i: string, t: string) => {
                 }}
                 style={styles.button11}
               >
-                下载
-              </Text>
+                <Text style={styles.button11Text}>
+                  下载
+                </Text>
+              </TouchableOpacity>
             </View>
           </ScrollView>
         )}
         {activeTab === 2 && (
-          <ScrollView contentContainerStyle={styles.content}>
-            {/* 这里放美图广场内容，比如图片卡片列表 */}
-            <Text>美图广场内容区</Text>
-            <View style={{flexDirection: 'row', flexWrap: 'wrap', gap: 10}}>
-              {data.length > 0 ? (
-                data.map((item, index) => {
-                  const { name, img } = item as { name: string; img: string };
-                  console.log(`渲染图片 ${index}:`, img); // 添加日志以便调试
-                  return (
-                    <View key={index} style={{width: '45%', marginBottom: 10}}>
-                      <Text style={{marginBottom: 5}}>{name}</Text>
-                      <View style={{backgroundColor: '#f0f0f0', borderRadius: 8, overflow: 'hidden'}}>
-                        {img ? (
-                          <Image
-                            source={{ uri: img }}
-                            style={{ width: '100%', height: 150 }}
-                            resizeMode="cover"
-                            onError={(e) => console.log(`图片加载错误 ${index}:`, e.nativeEvent.error)}
-                          />
-                        ) : (
-                          <View style={{width: '100%', height: 150, justifyContent: 'center', alignItems: 'center'}}>
-                            <Text>无图片</Text>
-                          </View>
-                        )}
+          <FlatList
+            data={data}
+            contentContainerStyle={styles.content}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item, index }) => {
+              const { name, img } = item as { name: string; img: string };
+              console.log(`渲染图片 ${index}:`, img); // 添加日志以便调试
+              return (
+                <View style={{width: '45%', marginBottom: 10, marginHorizontal: '2.5%'}}>
+                  <Text style={{marginBottom: 5}}>{name}</Text>
+                  <View style={{backgroundColor: '#f0f0f0', borderRadius: 8, overflow: 'hidden'}}>
+                    {img ? (
+                      <Image
+                        source={{ uri: img }}
+                        style={{ width: '100%', height: 150 }}
+                        resizeMode="cover"
+                        onError={(e) => console.log(`图片加载错误 ${index}:`, e.nativeEvent.error)}
+                      />
+                    ) : (
+                      <View style={{width: '100%', height: 150, justifyContent: 'center', alignItems: 'center'}}>
+                        <Text>无图片</Text>
                       </View>
-                    </View>
-                  );
-                })
-              ) : (
-                <Text style={{marginTop: 20}}>暂无数据</Text>
-              )}
-            </View>
-          </ScrollView>
+                    )}
+                  </View>
+                </View>
+              );
+            }}
+            ListEmptyComponent={() => (
+              <Text style={{marginTop: 20, textAlign: 'center', width: '100%'}}>暂无数据</Text>
+            )}
+            numColumns={2}
+          />
         )}
       </View>
     </View>
@@ -570,17 +595,28 @@ const saveData = async (i: string, t: string) => {
 
 const styles = StyleSheet.create({
   q: {
-    backgroundColor: 'rgb(22, 191, 221)',
-    padding: 8,
-    borderRadius: 10,
+
+    backgroundColor: '#4a90e2',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    shadowColor: '#4a90e2',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
     marginRight: 10,
     marginBottom: 10,
+ 
+  
   },
   w: {
-    backgroundColor: 'rgb(240, 240, 240)',
-    padding: 8,
-    borderRadius: 6,
-    marginRight: 13,
+    backgroundColor: '#fff',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+     marginRight: 10,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#ddd',
     marginBottom: 10,
   },
   headerBg: {
@@ -637,35 +673,56 @@ const styles = StyleSheet.create({
     backgroundColor: '#0a84ff',
     height: 40,
     width: '65%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+  buttonText: {
+    color: 'white',
     textAlign: 'center',
     lineHeight: 40,
-    borderRadius: 10,
   },
   button1: {
     backgroundColor: 'white',
     height: 40,
-    textAlign: 'center',
-    lineHeight: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: 10,
     width: '30%',
+  },
+  button1Text: {
+    color: 'black',
+    textAlign: 'center',
+    lineHeight: 40,
   },
   button10: {
     backgroundColor: '#0a84ff',
     height: 40,
     width: '65%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+  },
+  button10Text: {
+    color: 'white',
     textAlign: 'center',
     lineHeight: 40,
-    borderRadius: 10,
   },
   button11: {
     backgroundColor: 'white',
     height: 40,
-    textAlign: 'center',
-    lineHeight: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
     borderRadius: 10,
     borderWidth: 1,
     width: '30%',
   },
+  button11Text: {
+    color: 'black',
+    textAlign: 'center',
+    lineHeight: 40,
+  },
+
 
   sectionTitle: {
     fontSize: 18,
