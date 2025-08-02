@@ -3,6 +3,7 @@ import { View,  Text} from'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
+
 import Hui from './src/pages/Hui';
 import Show from './src/pages/Show';
 import Gong from './src/pages/Gong';
