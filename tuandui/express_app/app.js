@@ -9,7 +9,7 @@ const server = http.createServer(app);
 
 
 
-var list = require('./routes/list')
+var list = require('./routes/SS/list')
 
 var app = express();
 var cors = require( 'cors' );
