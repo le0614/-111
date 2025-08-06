@@ -3,8 +3,8 @@ import router from '@ohos.router';
 
 @Entry
 @Component
-struct personal_center {
-  @State message: string = 'personal_center';
+struct Login {
+  @State message: string = 'Login';
 
   build() {
     RelativeContainer() {
@@ -30,5 +30,3 @@ struct personal_center {
     .width('100%')
   }
 }
-
-export default personal_center

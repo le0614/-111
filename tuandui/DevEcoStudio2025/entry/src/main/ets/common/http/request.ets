@@ -141,6 +141,24 @@ class HttpRequest {
       headers
     });
   }
+
+  public put<T>(url: String, params?: Array<HeaderItem>, headers?: Array<HeaderItem>): Promise<ApiResponse<T>> {
+    const query = params ? this.buildQuery(params) : '';
+    return this.request<T>({
+      url:url + query,
+      method: HttpMethod.PUT,
+      headers
+    })
+  }
+
+  public delete<T>(url: String, params?: Array<HeaderItem>, headers?: Array<HeaderItem>): Promise<ApiResponse<T>> {
+    const query = params ? this.buildQuery(params) : '';
+    return this.request<T>({
+      url:url + query,
+      method: HttpMethod.DELETE,
+      headers
+    })
+  }
 }
 
 export const httpClient = HttpRequest.getInstance();

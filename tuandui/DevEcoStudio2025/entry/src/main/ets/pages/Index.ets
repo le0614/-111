@@ -1,121 +1,79 @@
 import router from '@ohos.router';
-import { httpClient } from '../common/http/request'
-
-// 定义Tab接口
-interface TabItem {
-  name: string;
-  icon: string;
-  page: string;
-}
+import Home from './Childs/Home'  // 小区服务
+import personal from './Childs/personal_center' // 周边生活
+import service from './Childs/service_order'  // 服务订单
+import surrounding from './Childs/surrounding_living'  // 个人中心
+import Index_home from './Childs/Index_home' // 首页
 
 @Entry
 @Component
 struct Index {
-  @State currentIndex: number = 0;
+  @State currentIndex: number = 2;
+  private tabsController: TabsController = new TabsController();
 
-  // Tab配置数据
-  private tabs: TabItem[] = [
-    { name: '首页', icon: './images/image1.png', page: 'pages/Home' },
-    { name: '个人中心', icon: './images/image1.png', page: 'pages/PersonalCenter' },
-    { name: '服务订单', icon: './images/image1.png', page: 'pages/ServiceOrder' },
-    { name: '周边生活', icon: './images/image1.png', page: 'pages/SurroundingLife' }
-  ];
+  @Builder TabBuilder(index: number, selectedICon: Resource,unselectIcon:Resource ,text?: string,iconSize: number = 24) {
+    Column() {
+      Image(this.currentIndex==index?unselectIcon:selectedICon)
+        .width(iconSize)
+        .height(iconSize)
+        .objectFit(ImageFit.Contain)
+      Text(text)
+        .fontColor(this.currentIndex==index?'#efb336':"rgb(0,0,0,0.60)")
+        .fontSize(12)
+        .margin({ top: 4 })
+    }
+    .width('100%')
+    .height(50)
+    .borderWidth({top:1})
+    .borderColor('#efb336')
+    .padding({top:7})
+    .onClick(() => {
+      this.currentIndex = index;
+      this.tabsController.changeIndex(index);
+    })
+  }
+
 
   build() {
-    Column() {
-      // 主内容区 - 使用Tabs组件
-      Tabs({ barPosition: BarPosition.End }) { // 设置tabbar在底部
-        ForEach(this.tabs, (item: TabItem, index: number) => {
-          TabContent() {
-            // 每个Tab对应的页面内容
-            this.getTabContent(index)
-          }
-          .tabBar(this.TabBarItem(item, index))
-        })
+    Tabs({ barPosition: BarPosition.End, controller: this.tabsController }) {
+      // 第一个Tab页
+      TabContent() {
+        Home()
       }
-      .barMode(BarMode.Fixed)
-      .barWidth('100%')
-      .barHeight(60)
-      .onChange((index: number) => {
-        this.currentIndex = index;
-        router.pushUrl({ url: this.tabs[index].page });
-      })
-      .width('100%')
-      .height('100%')
-    }
-  }
+      .tabBar(this.TabBuilder(0, $r('app.media.tuoguan'),$r('app.media.tuoguan1'), '小区服务'))
 
-  // 自定义TabBar项
-  @Builder
-  TabBarItem(item: TabItem, index: number) {
-    Column() {
-      Image(item.icon)
-        .width(24)
-        .height(24)
-        .margin({ bottom: 4 })
-      Text(item.name)
-        .fontSize(14)
+      // 第二个Tab页
+      TabContent() {
+        personal()
+      }
+      .tabBar(this.TabBuilder(1, $r('app.media.zhoubianshenghuo'), $r('app.media.zhoubianshenghuo1'), '周边生活'))
+
+      // 第三个Tab页
+      TabContent() {
+        Index_home()
+      }
+      .tabBar(this.TabBuilder(2, $r('app.media.xiaoqu'), $r('app.media.xiaoqu1', 'a',80)))
+      // 第四个Tab页
+      TabContent() {
+        service()
+      }
+      .tabBar(this.TabBuilder(3, $r('app.media.fuwudingdan'), $r('app.media.fuwudingdan1'), '服务订单'))
+
+
+      // 第五个Tab页
+      TabContent() {
+        surrounding()
+      }
+      .tabBar(this.TabBuilder(4, $r('app.media.icon7'), $r('app.media.icon71'), '个人中心'))
     }
+    .barWidth('100%') // 设置TabBar宽度
+    .barHeight(60)    // 设置TabBar高度
+    .onChange((index: number) => {
+      this.currentIndex = index;
+      // this.tabsController.changeIndex(index)
+    })
     .width('100%')
     .height('100%')
-    .justifyContent(FlexAlign.Center)
-    .backgroundColor(this.currentIndex === index ? '#f5f5f5' : '#ffffff')
-  }
-
-  // 获取对应Tab的内容
-  @Builder
-  getTabContent(index: number) {
-    if (index === 0) {
-      this.HomeContent()
-    } else if (index === 1) {
-      this.PersonalContent()
-    } else if (index === 2) {
-      this.ServiceContent()
-    } else {
-      this.SurroundingContent()
-    }
-  }
-
-  // 首页内容
-  @Builder
-  HomeContent() {
-    Column() {
-      Text('首页内容')
-        .fontSize(20)
-        .margin(20)
-
-      Button('跳转子页面')
-        .onClick(() => {
-          router.pushUrl({ url: 'pages/Home/SubPage' })
-        })
-    }
-    .width('100%')
-    .height('100%')
-  }
-
-  // 个人中心内容
-  @Builder
-  PersonalContent() {
-    Text('个人中心内容')
-      .fontSize(20)
-      .margin(20)
-  }
-
-  // 服务订单内容
-  @Builder
-  ServiceContent() {
-    Text('周边生活内容')
-      .fontSize(20)
-      .margin(20)
-    // service_order()
-    //   .margin({ top: 12 })
-  }
-
-  // 周边生活内容
-  @Builder
-  SurroundingContent() {
-    Text('周边生活内容')
-      .fontSize(20)
-      .margin(20)
+    .backgroundColor('#F1F3F5')
   }
 }

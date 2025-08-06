@@ -3,7 +3,7 @@ import router from '@ohos.router';
 
 @Entry
 @Component
-struct personal_center {
+struct Index_home {
   @State message: string = 'personal_center';
 
   build() {
@@ -31,4 +31,4 @@ struct personal_center {
   }
 }
 
-export default personal_center
+export default Index_home

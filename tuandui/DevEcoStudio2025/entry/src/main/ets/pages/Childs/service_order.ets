@@ -9,7 +9,6 @@ struct service_order {
   build() {
     RelativeContainer() {
       Text(this.message)
-      Text(this.message)
         .id('HelloWorld')
         .fontSize($r('app.float.page_text_font_size'))
         .fontWeight(FontWeight.Bold)
@@ -31,3 +30,6 @@ struct service_order {
     .width('100%')
   }
 }
+
+
+export default service_order

@@ -1,32 +1,23 @@
 import router from '@ohos.router';
 
-
 @Entry
 @Component
 struct Home {
-  @State message: string = 'Home';
-
   build() {
-    RelativeContainer() {
-      Text(this.message)
-        .id('HelloWorld')
-        .fontSize($r('app.float.page_text_font_size'))
-        .fontWeight(FontWeight.Bold)
-        .alignRules({
-          center: { anchor: '__container__', align: VerticalAlign.Center },
-          middle: { anchor: '__container__', align: HorizontalAlign.Center }
-        })
+    Column() {
+      Text("这是子页面")
+        .fontSize(30)
+        .margin(20)
+
+      Button("返回主页面")
         .onClick(() => {
-          this.message = 'Welcome';
+          router.back() // 返回上一页
         })
-      Button('asd').onClick(()=>{
-        console.log('ken',111)
-        router.pushUrl({
-          url:'pages/Dome'
-        })
-      })
     }
-    .height('100%')
     .width('100%')
+    .height('100%')
+    .justifyContent(FlexAlign.Center)
   }
 }
+
+export default Home

@@ -30,3 +30,6 @@ struct surrounding_living {
     .width('100%')
   }
 }
+
+
+export default surrounding_living
