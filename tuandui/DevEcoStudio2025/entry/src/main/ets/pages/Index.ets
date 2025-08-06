@@ -104,9 +104,11 @@ struct Index {
   // 服务订单内容
   @Builder
   ServiceContent() {
-    Text('服务订单内容')
+    Text('周边生活内容')
       .fontSize(20)
       .margin(20)
+    // service_order()
+    //   .margin({ top: 12 })
   }
 
   // 周边生活内容
