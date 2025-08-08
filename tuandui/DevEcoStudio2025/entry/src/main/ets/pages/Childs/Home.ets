@@ -100,7 +100,7 @@ struct Home {
         Text("小区通知")
           .fontSize(16)
         Button("更多").onClick(()=>{
-          router.pushUrl({ url: 'pages/Childs/SS/index_xiang' })
+          router.pushUrl({ url: 'pages/Childs/SS/Index_xiang' })
             .catch((error: Error) => {
               console.error('页面跳转失败:', error);
             });
@@ -122,7 +122,7 @@ struct Home {
         Text("小区通知")
           .fontSize(16)
         Button("更多").onClick(()=>{
-          router.pushUrl({ url: 'pages/Childs/SS/index_xiang' })
+          router.pushUrl({ url: 'pages/Childs/SS/Index_xiang' })
             .catch((error: Error) => {
               console.error('页面跳转失败:', error);
             });
