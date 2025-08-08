@@ -1,11 +1,11 @@
 var express = require('express');
 var router = express.Router();
 
-var {DatesModule} = require('../../databases/date')
+var {MessageModule} = require('../../databases/date')
 
 /* GET users listing. */
 router.get('/index',async function(req, res, next) {
-  const find = await DatesModule.find()
+  const find = await MessageModule.find()
   res.send({
     code:"200",
     date:find

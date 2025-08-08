@@ -6,6 +6,9 @@
     "pages/Childs/Index_home",
     "pages/Childs/personal_center",
     "pages/Childs/service_order",
-    "pages/Childs/surrounding_living"
+    "pages/Childs/surrounding_living",
+    "pages/Childs/SS/Home_huo",
+    "pages/Childs/SS/Home_tong",
+    "pages/Childs/SS/Index_xiang"
   ]
 }
